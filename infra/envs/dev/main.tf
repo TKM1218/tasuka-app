@@ -32,6 +32,23 @@ module "dynamodb" {
 }
 
 # --------------------------------------------------
+# iam: lambda execution role and policy
+# --------------------------------------------------
+module "iam" {
+  source      = "../../modules/iam"
+  name_prefix = local.name_prefix
+  dynamodb_table_arns = [
+    module.dynamodb.lists_table_arn,
+    module.dynamodb.list_members_table_arn,
+    module.dynamodb.items_table_arn,
+    module.dynamodb.notifications_table_arn,
+  ]
+  # SSM ParameterのARNはSSMモジュール導入後に配線する想定
+  ssm_param_arns = []
+  tags           = var.tags
+}
+
+# --------------------------------------------------
 # authentication: Cognito user pool
 # --------------------------------------------------
 module "cognito" {
