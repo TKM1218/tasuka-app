@@ -21,3 +21,12 @@ resource "aws_dynamodb_table" "tfstate_lock" {
 
   tags = var.tags
 }
+
+# --------------------------------------
+# application data: DynamoDB tables
+# --------------------------------------
+module "dynamodb" {
+  source      = "../../modules/dynamodb"
+  name_prefix = local.name_prefix
+  tags        = var.tags
+}
