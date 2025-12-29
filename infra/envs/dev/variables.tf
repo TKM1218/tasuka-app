@@ -1,6 +1,6 @@
-# -------------------------------
+# --------------------------------------------------
 # variables: basic settings
-# -------------------------------
+# --------------------------------------------------
 variable "project" {
   description = "Project name"
   type        = string
@@ -17,18 +17,36 @@ variable "aws_profile" {
   type        = string
 }
 
-# -------------------------------
+# --------------------------------------------------
 # variables: common tags
-# -------------------------------
+# --------------------------------------------------
 variable "tags" {
   description = "Common tags for all resources in this environment"
   type        = map(string)
   default     = {}
 }
 
-# -------------------------------
+# --------------------------------------------------
+# variables: cognito
+# --------------------------------------------------
+variable "cognito_hosted_ui_domain_prefix" {
+  description = "Cognito Hosted UIのドメインプレフィックス。"
+  type        = string
+}
+
+variable "cognito_callback_urls" {
+  description = "CognitoのOAuth callback URL一覧。"
+  type        = list(string)
+}
+
+variable "cognito_logout_urls" {
+  description = "CognitoのOAuth logout URL一覧。"
+  type        = list(string)
+}
+
+# --------------------------------------------------
 # variables: terraform state
-# -------------------------------
+# --------------------------------------------------
 variable "tfstate_bucket_name" {
   description = "S3 bucket name for Terraform state storage."
   type        = string
