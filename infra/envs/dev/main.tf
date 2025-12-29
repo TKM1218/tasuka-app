@@ -59,3 +59,23 @@ module "cognito" {
   logout_urls             = var.cognito_logout_urls
   tags                    = var.tags
 }
+
+# --------------------------------------------------
+# lambda: api
+# --------------------------------------------------
+module "lambda_api" {
+  source          = "../../modules/lambda_api"
+  name_prefix     = local.name_prefix
+  lambda_role_arn = module.iam.lambda_role_arn
+
+  artifact_path = "${path.root}/../../../artifacts/lambda-api/dummy-lambda-api.zip"
+
+  environment_variables = {
+    LISTS_TABLE         = module.dynamodb.lists_table_name
+    LIST_MEMBERS_TABLE  = module.dynamodb.list_members_table_name
+    ITEMS_TABLE         = module.dynamodb.items_table_name
+    NOTIFICATIONS_TABLE = module.dynamodb.notifications_table_name
+  }
+
+  tags                  = var.tags
+}
