@@ -1,6 +1,6 @@
-# -------------------------------
+# --------------------------------------------------
 # tables: lists
-# -------------------------------
+# --------------------------------------------------
 # リストのメタデータを格納。
 resource "aws_dynamodb_table" "lists" {
   name         = "${var.name_prefix}-lists"
@@ -15,9 +15,9 @@ resource "aws_dynamodb_table" "lists" {
   tags = var.tags
 }
 
-# -------------------------------
+# --------------------------------------------------
 # tables: list_members
-# -------------------------------
+# --------------------------------------------------
 # リストのメンバーと権限を格納。
 resource "aws_dynamodb_table" "list_members" {
   name         = "${var.name_prefix}-list-members"
@@ -55,9 +55,9 @@ resource "aws_dynamodb_table" "list_members" {
   tags = var.tags
 }
 
-# -------------------------------
+# --------------------------------------------------
 # tables: items
-# -------------------------------
+# --------------------------------------------------
 # 買い物/ToDoの項目を格納（期限GSIあり）。
 resource "aws_dynamodb_table" "items" {
   name         = "${var.name_prefix}-items"
@@ -95,9 +95,9 @@ resource "aws_dynamodb_table" "items" {
   tags = var.tags
 }
 
-# -------------------------------
+# --------------------------------------------------
 # tables: notifications
-# -------------------------------
+# --------------------------------------------------
 # 通知ログ（1日単位）を格納。
 resource "aws_dynamodb_table" "notifications" {
   name         = "${var.name_prefix}-notifications"
