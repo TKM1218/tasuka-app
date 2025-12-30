@@ -95,3 +95,15 @@ module "apigw_http" {
   ])
   tags = var.tags
 }
+
+# --------------------------------------------------
+# scheduler: base schedule (temporary wiring)
+# --------------------------------------------------
+module "scheduler" {
+  source               = "../../modules/scheduler"
+  name_prefix          = local.name_prefix
+  schedule_expression  = var.scheduler_schedule_expression
+  target_lambda_arn    = module.lambda_api.function_arn
+  target_input         = var.scheduler_target_input
+  tags                 = var.tags
+}

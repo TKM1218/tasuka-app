@@ -25,6 +25,12 @@ cognito_logout_urls = [
 ]
 
 # --------------------------------------------------
+# variables: scheduler
+# --------------------------------------------------
+scheduler_schedule_expression = "rate(7 days)"
+scheduler_target_input        = null
+
+# --------------------------------------------------
 # variables: terraform state
 # --------------------------------------------------
 tfstate_bucket_name     = "tasuka-dev-tfstate-bucket-299030937743"

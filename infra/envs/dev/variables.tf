@@ -56,3 +56,17 @@ variable "tfstate_lock_table_name" {
   description = "DynamoDB table name for Terraform state locking."
   type        = string
 }
+
+# --------------------------------------------------
+# variables: scheduler
+# --------------------------------------------------
+variable "scheduler_schedule_expression" {
+  description = "EventBridge Schedulerのcronまたはrate式"
+  type        = string
+}
+
+variable "scheduler_target_input" {
+  description = "SchedulerがLambdaへ渡す入力（JSON文字列 or map）"
+  type        = any
+  default     = null
+}
