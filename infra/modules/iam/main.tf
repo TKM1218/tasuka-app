@@ -51,16 +51,28 @@ data "aws_iam_policy_document" "lambda_policy" {
     resources = local.dynamodb_resources
   }
 
-  # TODO:ssmを実装していなくinputパラメータがnullでapplyエラーになるためssm実装後に下記をコメントインする
-  # statement {
-  #   sid = "SSMParameterRead"
-  #   actions = [
-  #     "ssm:GetParameter",
-  #     "ssm:GetParameters",
-  #     "ssm:GetParametersByPath",
-  #   ]
-  #   resources = var.ssm_param_arns
-  # }
+  # SSM/SecretsはARNが渡されたときだけ付与する
+  dynamic "statement" {
+    for_each = length(var.ssm_param_arns) > 0 ? [1] : []
+    content {
+      sid = "SSMParameterRead"
+      actions = [
+        "ssm:GetParameter",
+        "ssm:GetParameters",
+        "ssm:GetParametersByPath",
+      ]
+      resources = var.ssm_param_arns
+    }
+  }
+
+  dynamic "statement" {
+    for_each = length(var.secretsmanager_arns) > 0 ? [1] : []
+    content {
+      sid       = "SecretsManagerRead"
+      actions   = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"]
+      resources = var.secretsmanager_arns
+    }
+  }
 
   statement {
     sid = "CloudWatchLogsWrite"

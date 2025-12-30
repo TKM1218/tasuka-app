@@ -17,6 +17,13 @@ variable "dynamodb_table_arns" {
 variable "ssm_param_arns" {
   description = "Lambdaが参照するSSM ParameterのARN一覧"
   type        = list(string)
+  default     = []
+}
+
+variable "secretsmanager_arns" {
+  description = "Lambdaが参照するSecrets ManagerのARN一覧"
+  type        = list(string)
+  default     = []
 }
 
 # --------------------------------------------------
