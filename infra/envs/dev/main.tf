@@ -79,3 +79,19 @@ module "lambda_api" {
 
   tags                  = var.tags
 }
+
+# --------------------------------------------------
+# api gateway: http api
+# --------------------------------------------------
+module "apigw_http" {
+  source               = "../../modules/apigw_http"
+  name_prefix          = local.name_prefix
+  lambda_invoke_arn    = module.lambda_api.invoke_arn
+  lambda_function_name = module.lambda_api.function_name
+  jwt_issuer           = module.cognito.issuer
+  jwt_audience         = [module.cognito.user_pool_client_id]
+  cors_allow_origins = distinct([
+    for url in concat(var.cognito_callback_urls, var.cognito_logout_urls) : regex("^https?://[^/]+", url)
+  ])
+  tags = var.tags
+}
