@@ -1,14 +1,9 @@
 # --------------------------------------------------
 # data/locals: ssm parameter names for notify lambdas
 # --------------------------------------------------
-data "aws_region" "current" {}
-data "aws_caller_identity" "current" {}
-
 locals {
   slack_webhook_param_name    = "/${var.project}/${var.env}/slack/webhook_url"
   weather_location_param_name = "/${var.project}/${var.env}/weather/location"
-  slack_webhook_param_arn     = "arn:aws:ssm:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:parameter${local.slack_webhook_param_name}"
-  weather_location_param_arn  = "arn:aws:ssm:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:parameter${local.weather_location_param_name}"
 }
 
 # --------------------------------------------------
@@ -45,6 +40,19 @@ module "dynamodb" {
 }
 
 # --------------------------------------------------
+# ssm: slack webhook / weather location
+# --------------------------------------------------
+module "ssm_params" {
+  source                      = "../../modules/ssm_params"
+  name_prefix                 = local.name_prefix
+  slack_webhook_param_name    = local.slack_webhook_param_name
+  slack_webhook_url           = var.slack_webhook_url
+  weather_location_param_name = local.weather_location_param_name
+  weather_location            = var.weather_location
+  tags                        = var.tags
+}
+
+# --------------------------------------------------
 # iam: lambda execution role and policy
 # --------------------------------------------------
 module "iam" {
@@ -57,8 +65,8 @@ module "iam" {
     module.dynamodb.notifications_table_arn,
   ]
   ssm_param_arns = [
-    local.slack_webhook_param_arn,
-    local.weather_location_param_arn,
+    module.ssm_params.slack_webhook_param_arn,
+    module.ssm_params.weather_location_param_arn,
   ]
   tags           = var.tags
 }
@@ -121,13 +129,13 @@ module "lambda_notify" {
   artifact_path_due     = "${path.root}/../../../artifacts/lambda-notify/dummy-notify.zip"
   artifact_path_weather = "${path.root}/../../../artifacts/lambda-notify/dummy-notify.zip"
   due_environment_variables = {
-    SLACK_WEBHOOK_PARAM_NAME = local.slack_webhook_param_name
+    SLACK_WEBHOOK_PARAM_NAME = module.ssm_params.slack_webhook_param_name
     ITEMS_TABLE_NAME         = module.dynamodb.items_table_name
     NOTIFICATIONS_TABLE_NAME = module.dynamodb.notifications_table_name
   }
   weather_environment_variables = {
-    SLACK_WEBHOOK_PARAM_NAME    = local.slack_webhook_param_name
-    WEATHER_LOCATION_PARAM_NAME = local.weather_location_param_name
+    SLACK_WEBHOOK_PARAM_NAME    = module.ssm_params.slack_webhook_param_name
+    WEATHER_LOCATION_PARAM_NAME = module.ssm_params.weather_location_param_name
   }
   tags = var.tags
 }

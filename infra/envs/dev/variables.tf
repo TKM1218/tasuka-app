@@ -45,6 +45,20 @@ variable "cognito_logout_urls" {
 }
 
 # --------------------------------------------------
+# variables: ssm params
+# --------------------------------------------------
+variable "slack_webhook_url" {
+  description = "Slack Webhook URL（SSMに保存する値）"
+  type        = string
+  sensitive   = true
+}
+
+variable "weather_location" {
+  description = "天気通知の地域（SSMに保存する値）"
+  type        = string
+}
+
+# --------------------------------------------------
 # variables: terraform state
 # --------------------------------------------------
 variable "tfstate_bucket_name" {

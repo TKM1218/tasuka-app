@@ -25,6 +25,12 @@ cognito_logout_urls = [
 ]
 
 # --------------------------------------------------
+# variables: ssm params
+# --------------------------------------------------
+slack_webhook_url = "sample_slack_webhook_url"
+weather_location  = "tokyo"
+
+# --------------------------------------------------
 # variables: scheduler
 # --------------------------------------------------
 scheduler_schedule_expression = "rate(7 days)"
