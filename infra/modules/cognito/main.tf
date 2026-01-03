@@ -14,6 +14,11 @@ resource "aws_cognito_user_pool" "main" {
   username_attributes      = ["email"]
   auto_verified_attributes = ["email"]
 
+  # Hosted UIでの自己サインアップを許可
+  admin_create_user_config {
+    allow_admin_create_user_only = false
+  }
+
   # 最低限の強いパスワードポリシーを設定。
   password_policy {
     minimum_length    = 12
@@ -37,7 +42,7 @@ resource "aws_cognito_user_pool_client" "web" {
   generate_secret = false
 
   allowed_oauth_flows_user_pool_client = true
-  allowed_oauth_flows                  = ["code"]
+  allowed_oauth_flows                  = ["code", "implicit"]
   allowed_oauth_scopes                 = var.oauth_scopes
   supported_identity_providers         = ["COGNITO"]
 
