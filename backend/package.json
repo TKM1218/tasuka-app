@@ -1,0 +1,17 @@
+{
+  "name": "tasuka-backend",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "package": "zip -j ../artifacts/lambda-api/dummy-lambda-api.zip dist/index.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.637.0",
+    "@aws-sdk/lib-dynamodb": "3.637.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "8.10.143",
+    "typescript": "5.4.5"
+  }
+}
