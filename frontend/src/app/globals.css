@@ -37,3 +37,29 @@ main {
   text-decoration: none;
   cursor: pointer;
 }
+
+.field {
+  margin-top: 12px;
+}
+
+input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d9d2c3;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.list {
+  margin-top: 16px;
+  padding-left: 16px;
+}
+
+.list button {
+  border: none;
+  background: transparent;
+  color: #1f1f1f;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}

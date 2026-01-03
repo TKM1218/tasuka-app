@@ -8,12 +8,39 @@ type HealthResult = {
   error?: string;
 };
 
+type ListItem = {
+  listId: string;
+  name: string;
+};
+
+type Item = {
+  listId: string;
+  itemId: string;
+  type: "shopping" | "todo";
+  title: string;
+  name?: string;
+  memo?: string | null;
+  quantity?: number | null;
+  dueDate?: string | null;
+};
+
 const tokenKey = "tasuka:cognito_token";
 
 export default function HomePage() {
   const [token, setToken] = useState<string | null>(null);
   const [health, setHealth] = useState<HealthResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [lists, setLists] = useState<ListItem[]>([]);
+  const [listsLoading, setListsLoading] = useState(false);
+  const [listsError, setListsError] = useState<string | null>(null);
+  const [newListName, setNewListName] = useState("");
+  const [selectedListId, setSelectedListId] = useState<string | null>(null);
+
+  const [items, setItems] = useState<Item[]>([]);
+  const [itemsLoading, setItemsLoading] = useState(false);
+  const [itemsError, setItemsError] = useState<string | null>(null);
+  const [newItemTitle, setNewItemTitle] = useState("");
+  const [newItemType, setNewItemType] = useState<"shopping" | "todo">("shopping");
 
   const env = useMemo(() => {
     return {
@@ -34,7 +61,8 @@ export default function HomePage() {
       const params = new URLSearchParams(hash);
       const accessToken = params.get("access_token");
       const idToken = params.get("id_token");
-      const resolved = accessToken || idToken;
+      // JWT authorizer の audience 対応のため id_token を優先する
+      const resolved = idToken || accessToken;
       if (resolved) {
         localStorage.setItem(tokenKey, resolved);
         setToken(resolved);
@@ -77,6 +105,23 @@ export default function HomePage() {
     localStorage.removeItem(tokenKey);
     setToken(null);
     setHealth(null);
+    setLists([]);
+    setItems([]);
+    setSelectedListId(null);
+  };
+
+  const apiFetch = async (path: string, init?: RequestInit) => {
+    if (!token || !env.apiBaseUrl) {
+      throw new Error("Missing auth or API base URL");
+    }
+    const res = await fetch(`${env.apiBaseUrl}${path}`, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(init?.headers ?? {}),
+      },
+    });
+    return res;
   };
 
   const callHealth = async () => {
@@ -99,6 +144,116 @@ export default function HomePage() {
       setLoading(false);
     }
   };
+
+  const loadLists = async () => {
+    setListsLoading(true);
+    setListsError(null);
+    try {
+      const res = await apiFetch("/lists");
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message ?? "Failed to load lists");
+      }
+      setLists(data.items ?? []);
+    } catch (err) {
+      setListsError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setListsLoading(false);
+    }
+  };
+
+  const createList = async () => {
+    if (!newListName.trim()) {
+      setListsError("リスト名を入力してください。");
+      return;
+    }
+    setListsLoading(true);
+    setListsError(null);
+    try {
+      const res = await apiFetch("/lists", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: newListName.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message ?? "Failed to create list");
+      }
+      setNewListName("");
+      await loadLists();
+      setSelectedListId(data.listId);
+    } catch (err) {
+      setListsError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setListsLoading(false);
+    }
+  };
+
+  const loadItems = async (listId: string) => {
+    setItemsLoading(true);
+    setItemsError(null);
+    try {
+      const res = await apiFetch(`/lists/${listId}/items`);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message ?? "Failed to load items");
+      }
+      setItems(data.items ?? []);
+    } catch (err) {
+      setItemsError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setItemsLoading(false);
+    }
+  };
+
+  const createItem = async () => {
+    if (!selectedListId) {
+      setItemsError("リストを選択してください。");
+      return;
+    }
+    if (!newItemTitle.trim()) {
+      setItemsError("アイテム名を入力してください。");
+      return;
+    }
+    setItemsLoading(true);
+    setItemsError(null);
+    try {
+      const res = await apiFetch(`/lists/${selectedListId}/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: newItemType,
+          title: newItemTitle.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message ?? "Failed to create item");
+      }
+      setNewItemTitle("");
+      await loadItems(selectedListId);
+    } catch (err) {
+      setItemsError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setItemsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      loadLists();
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (token && selectedListId) {
+      loadItems(selectedListId);
+    }
+  }, [token, selectedListId]);
 
   const missingEnv =
     !env.domain || !env.clientId || !env.redirectUri || !env.apiBaseUrl;
@@ -144,6 +299,86 @@ export default function HomePage() {
               Logout (Cognito)
             </a>
           )}
+        </div>
+      )}
+
+      {token && (
+        <div style={{ marginTop: "24px" }}>
+          <h2>Lists</h2>
+          <div className="field">
+            <input
+              value={newListName}
+              onChange={(event) => setNewListName(event.target.value)}
+              placeholder="新しいリスト名"
+            />
+            <button
+              className="button"
+              onClick={createList}
+              disabled={listsLoading}
+              style={{ marginTop: "8px" }}
+            >
+              {listsLoading ? "Creating..." : "Create List"}
+            </button>
+          </div>
+          {listsError && <p style={{ color: "#b42318" }}>{listsError}</p>}
+          {listsLoading && <p>Loading lists...</p>}
+          <ul className="list">
+            {lists.map((list) => (
+              <li key={list.listId}>
+                <button onClick={() => setSelectedListId(list.listId)}>
+                  {list.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {token && selectedListId && (
+        <div style={{ marginTop: "24px" }}>
+          <h2>Items</h2>
+          <div className="field">
+            <input
+              value={newItemTitle}
+              onChange={(event) => setNewItemTitle(event.target.value)}
+              placeholder="アイテム名"
+            />
+            <div style={{ marginTop: "8px" }}>
+              <label>
+                <input
+                  type="radio"
+                  checked={newItemType === "shopping"}
+                  onChange={() => setNewItemType("shopping")}
+                />
+                Shopping
+              </label>
+              <label style={{ marginLeft: "12px" }}>
+                <input
+                  type="radio"
+                  checked={newItemType === "todo"}
+                  onChange={() => setNewItemType("todo")}
+                />
+                Todo
+              </label>
+            </div>
+            <button
+              className="button"
+              onClick={createItem}
+              disabled={itemsLoading}
+              style={{ marginTop: "8px" }}
+            >
+              {itemsLoading ? "Creating..." : "Add Item"}
+            </button>
+          </div>
+          {itemsError && <p style={{ color: "#b42318" }}>{itemsError}</p>}
+          {itemsLoading && <p>Loading items...</p>}
+          <ul className="list">
+            {items.map((item) => (
+              <li key={item.itemId}>
+                {item.title} <span>({item.type})</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
