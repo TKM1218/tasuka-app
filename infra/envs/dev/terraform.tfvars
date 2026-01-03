@@ -18,7 +18,7 @@ tags = {
 # --------------------------------------------------
 cognito_hosted_ui_domain_prefix = "tasuka-dev-12345"
 cognito_callback_urls = [
-  "http://localhost:3000/auth/callback",
+  "http://localhost:3000",
 ]
 cognito_logout_urls = [
   "http://localhost:3000/",
@@ -27,7 +27,7 @@ cognito_logout_urls = [
 # --------------------------------------------------
 # variables: ssm params
 # --------------------------------------------------
-slack_webhook_url = "sample_slack_webhook_url"
+slack_webhook_url = "sample_slack_webhook_url"  # TODO:修正する
 weather_location  = "tokyo"
 
 # --------------------------------------------------
