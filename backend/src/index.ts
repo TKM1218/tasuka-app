@@ -57,6 +57,38 @@ const chunk = <T,>(items: T[], size: number): T[][] => {
   return result;
 };
 
+type Membership = {
+  role?: string;
+};
+
+const authorizeListAccess = async (
+  listId: string,
+  userId: string,
+  allowedRoles: string[]
+): Promise<{ ok: true } | { ok: false; response: JsonResponse }> => {
+  // list_members を必ず参照し、roleも確認する共通認可
+  const res = await client.send(
+    new GetCommand({
+      TableName: LIST_MEMBERS_TABLE,
+      Key: {
+        listId,
+        userId,
+      },
+    })
+  );
+
+  if (!res.Item) {
+    return { ok: false, response: json(403, { message: "Forbidden" }) };
+  }
+
+  const role = (res.Item as Membership).role ?? "";
+  if (!allowedRoles.includes(role)) {
+    return { ok: false, response: json(403, { message: "Forbidden" }) };
+  }
+
+  return { ok: true };
+};
+
 const ensureMember = async (
   listId: string,
   userId: string
@@ -209,8 +241,8 @@ const handleItemsIndex = async (
   listId: string,
   userId: string
 ): Promise<JsonResponse> => {
-  const allowed = await ensureMember(listId, userId);
-  if (!allowed) {
+  const auth = await authorizeListAccess(listId, userId, ["owner", "member"]);
+  if (!auth.ok) {
     return json(403, { message: "Forbidden" });
   }
 
@@ -241,8 +273,8 @@ const handleItemsCreate = async (
   userId: string,
   rawBody: string
 ): Promise<JsonResponse> => {
-  const allowed = await ensureMember(listId, userId);
-  if (!allowed) {
+  const auth = await authorizeListAccess(listId, userId, ["owner", "member"]);
+  if (!auth.ok) {
     return json(403, { message: "Forbidden" });
   }
 

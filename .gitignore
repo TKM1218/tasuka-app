@@ -48,3 +48,6 @@ frontend/.next/
 frontend/out/
 frontend/.env.local
 frontend/npm-debug.log*
+backend/node_modules/
+backend/dist/
+backend/npm-debug.log*
