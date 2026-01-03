@@ -58,6 +58,44 @@ resource "aws_apigatewayv2_route" "health" {
 }
 
 # --------------------------------------------------
+# routes: lists
+# --------------------------------------------------
+resource "aws_apigatewayv2_route" "lists_get" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "GET /lists"
+  target             = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+}
+
+resource "aws_apigatewayv2_route" "lists_post" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /lists"
+  target             = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+}
+
+# --------------------------------------------------
+# routes: list items
+# --------------------------------------------------
+resource "aws_apigatewayv2_route" "items_get" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "GET /lists/{listId}/items"
+  target             = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+}
+
+resource "aws_apigatewayv2_route" "items_post" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /lists/{listId}/items"
+  target             = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+}
+
+# --------------------------------------------------
 # stage: default
 # --------------------------------------------------
 resource "aws_apigatewayv2_stage" "default" {
