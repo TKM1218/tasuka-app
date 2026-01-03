@@ -41,3 +41,10 @@ requirements.md
 decisions.md
 tasks.md
 infra-structure.md
+
+# Node.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+frontend/npm-debug.log*
